@@ -3,31 +3,31 @@ main = "src/index.ts"
 compatibility_date = "2024-12-18"
 compatibility_flags = ["nodejs_compat"]
 
-# ─── D1 Database ─────────────────────────────────────────────────────────────
+# D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "pillboard-db"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "04d66099-51cf-4e93-a9ad-a7e536bc402c"
 migrations_dir = "../../packages/db/migrations"
 
-# ─── KV Namespaces ────────────────────────────────────────────────────────────
+# KV Namespaces
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "REPLACE_WITH_YOUR_KV_SESSIONS_ID"
-preview_id = "REPLACE_WITH_YOUR_KV_SESSIONS_PREVIEW_ID"
+id = "9fabed49e9a74b72a6edf8188325e61f"
+preview_id = "9fabed49e9a74b72a6edf8188325e61f"
 
 [[kv_namespaces]]
 binding = "CACHE"
-id = "REPLACE_WITH_YOUR_KV_CACHE_ID"
-preview_id = "REPLACE_WITH_YOUR_KV_CACHE_PREVIEW_ID"
+id = "00e2b81a97b74be780c9c5e8ea86a0ef"
+preview_id = "00e2b81a97b74be780c9c5e8ea86a0ef"
 
-# ─── R2 Bucket ────────────────────────────────────────────────────────────────
+# R2 Bucket
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "pillboard-media"
 preview_bucket_name = "pillboard-media-preview"
 
-# ─── Durable Objects ──────────────────────────────────────────────────────────
+# Durable Objects
 [[durable_objects.bindings]]
 name = "GLOBAL_PRESENCE"
 class_name = "GlobalPresence"
@@ -42,38 +42,103 @@ class_name = "RateLimiter"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["GlobalPresence", "RoomPresence", "RateLimiter"]
+new_sqlite_classes = ["GlobalPresence", "RoomPresence", "RateLimiter"]
 
-# ─── Secrets (set via `wrangler secret put`) ─────────────────────────────────
-# JWT_SECRET
-# GITHUB_CLIENT_ID
-# GITHUB_CLIENT_SECRET
-# GOOGLE_CLIENT_ID
-# GOOGLE_CLIENT_SECRET
-# RESEND_API_KEY
-
-# ─── Vars ────────────────────────────────────────────────────────────────────
+# Vars
 [vars]
 APP_URL = "https://thepillboard.com"
 SUBMISSION_COOLDOWN_SECONDS = "30"
 COMMENT_COOLDOWN_SECONDS = "10"
 MAX_SUBMISSIONS_PER_HOUR = "5"
 
-# ─── Preview Environment ──────────────────────────────────────────────────────
+# Preview Environment
 [env.preview]
 name = "thepillboard-api-preview"
+workers_dev = true
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "pillboard-db"
+database_id = "04d66099-51cf-4e93-a9ad-a7e536bc402c"
+migrations_dir = "../../packages/db/migrations"
+
+[[env.preview.kv_namespaces]]
+binding = "SESSIONS"
+id = "9fabed49e9a74b72a6edf8188325e61f"
+preview_id = "9fabed49e9a74b72a6edf8188325e61f"
+
+[[env.preview.kv_namespaces]]
+binding = "CACHE"
+id = "00e2b81a97b74be780c9c5e8ea86a0ef"
+preview_id = "00e2b81a97b74be780c9c5e8ea86a0ef"
+
+# R2 disabled until bucket is enabled in Cloudflare dashboard
+# [[env.preview.r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "pillboard-media"
+# preview_bucket_name = "pillboard-media-preview"
+
+[[env.preview.durable_objects.bindings]]
+name = "GLOBAL_PRESENCE"
+class_name = "GlobalPresence"
+
+[[env.preview.durable_objects.bindings]]
+name = "ROOM_PRESENCE"
+class_name = "RoomPresence"
+
+[[env.preview.durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
 
 [env.preview.vars]
-APP_URL = "https://preview.thepillboard.com"
+APP_URL = "https://preview-api.thepillboard.com"
+SUBMISSION_COOLDOWN_SECONDS = "30"
+COMMENT_COOLDOWN_SECONDS = "10"
+MAX_SUBMISSIONS_PER_HOUR = "5"
 
-# ─── Production Environment ───────────────────────────────────────────────────
+[[env.preview.routes]]
+pattern = "preview-api.thepillboard.com/*"
+zone_name = "thepillboard.com"
+
+# Production Environment
 [env.production]
 name = "thepillboard-api"
 
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "pillboard-db"
+database_id = "04d66099-51cf-4e93-a9ad-a7e536bc402c"
+migrations_dir = "../../packages/db/migrations"
+
+[[env.production.kv_namespaces]]
+binding = "SESSIONS"
+id = "9fabed49e9a74b72a6edf8188325e61f"
+preview_id = "9fabed49e9a74b72a6edf8188325e61f"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "00e2b81a97b74be780c9c5e8ea86a0ef"
+preview_id = "00e2b81a97b74be780c9c5e8ea86a0ef"
+
+[[env.production.r2_buckets]]
+binding = "MEDIA"
+bucket_name = "pillboard-media"
+preview_bucket_name = "pillboard-media-preview"
+
+[[env.production.durable_objects.bindings]]
+name = "GLOBAL_PRESENCE"
+class_name = "GlobalPresence"
+
+[[env.production.durable_objects.bindings]]
+name = "ROOM_PRESENCE"
+class_name = "RoomPresence"
+
+[[env.production.durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
 [env.production.vars]
 APP_URL = "https://thepillboard.com"
-
-# ─── Routes ───────────────────────────────────────────────────────────────────
-[[routes]]
-pattern = "api.thepillboard.com/*"
-zone_name = "thepillboard.com"
+SUBMISSION_COOLDOWN_SECONDS = "30"
+COMMENT_COOLDOWN_SECONDS = "10"
+MAX_SUBMISSIONS_PER_HOUR = "5"
