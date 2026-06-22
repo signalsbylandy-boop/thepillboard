@@ -19,8 +19,8 @@ export function VoteButton({
   targetId,
   targetType,
   score,
-  upVotes,
-  downVotes,
+  upVotes: _upVotes,
+  downVotes: _downVotes,
   userVote: initialVote,
   size = 'md',
 }: VoteButtonProps) {

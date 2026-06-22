@@ -5,7 +5,6 @@ import { getDb } from '../lib/db'
 import { posts, tags, postTags, votes, users, moderationQueue } from '@pillboard/db'
 import { authMiddleware, requireAuth } from '../middleware/auth'
 import { rateLimit } from '../middleware/rateLimit'
-import { computeHotScore } from '../lib/ranking'
 
 const postsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 

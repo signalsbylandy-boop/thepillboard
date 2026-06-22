@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy } from 'react'
 import { Header } from '@/components/layout/Header'
 import { useGlobalPresence } from '@/hooks/usePresence'
 import { Loader2 } from 'lucide-react'

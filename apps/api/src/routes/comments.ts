@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, and, isNull, asc } from 'drizzle-orm'
+import { eq, and, asc } from 'drizzle-orm'
 import type { Env, Variables } from '../types'
 import { getDb } from '../lib/db'
 import { comments, posts, votes, users } from '@pillboard/db'

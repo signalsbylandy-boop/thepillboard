@@ -12,7 +12,7 @@ import type { Comment } from '@pillboard/types'
 
 export function PostPage() {
   const { slug } = useParams<{ slug: string }>()
-  const { token, isAuthenticated, user } = useAuthStore()
+  const { token, isAuthenticated } = useAuthStore()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
