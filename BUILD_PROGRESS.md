@@ -269,10 +269,28 @@ thepillboard/
     - Web: `http://localhost:5173` (Vite)
   - ✅ Verified: `GET /health → {status: ok}`, `POST /auth/register → JWT + user object`
 
-**Next steps (when ready to deploy):**
-1. Create GitHub account → `gh auth login` → `gh repo create thepillboard --public`
-2. `scripts/setup-cloudflare.ps1` → get D1/KV/R2 IDs
-3. Fill placeholder IDs in `apps/api/wrangler.toml`
-4. `npx wrangler secret put JWT_SECRET`
-5. `git push` → GitHub Actions CI deploys to Cloudflare Workers
-6. `scripts/create-github-issues.ps1 -Repo "username/thepillboard"` → creates full epic
+- **2026-06-22 (session 3)** — Cloudflare resources provisioned, full cloud preview live.
+  - ✅ GitHub repo created: https://github.com/signalsbylandy-boop/thepillboard
+  - ✅ GitHub epic created: 34 issues across 7 milestones (v0.1–v0.7)
+  - ✅ Cloudflare D1 database: pillboard-db (04d66099-51cf-4e93-a9ad-a7e536bc402c)
+  - ✅ Cloudflare KV Sessions: 9fabed49e9a74b72a6edf8188325e61f
+  - ✅ Cloudflare KV Cache: 00e2b81a97b74be780c9c5e8ea86a0ef
+  - ✅ D1 migrations applied to remote (44 SQL commands)
+  - ✅ workers.dev subdomain claimed: signalsbylandy.workers.dev
+  - ✅ JWT_SECRET set on preview worker
+  - ✅ Preview API live: https://thepillboard-api-preview.signalsbylandy.workers.dev
+  - ✅ Preview frontend live: https://preview.thepillboard-web.pages.dev
+  - ✅ End-to-end verified: /health, /auth/register, /auth/login, /posts all working
+
+**Preview environment (review before prod):**
+- API: https://thepillboard-api-preview.signalsbylandy.workers.dev
+- Frontend: https://preview.thepillboard-web.pages.dev
+
+**Next steps:**
+1. Add proxied DNS record `preview-api.thepillboard.com` → A `192.0.2.1` in Cloudflare dashboard
+2. Enable R2 in Cloudflare dashboard → re-add R2 binding → redeploy
+3. Add GitHub Actions secrets:
+   - CLOUDFLARE_API_TOKEN (create at dash.cloudflare.com/profile/api-tokens)
+   - CLOUDFLARE_ACCOUNT_ID = 0617757ef697032f95b1de5b5aaf03f9
+   - PREVIEW_API_URL = https://thepillboard-api-preview.signalsbylandy.workers.dev
+4. Push a branch → CI auto-deploys preview, merge to main → production deploys
