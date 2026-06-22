@@ -1,0 +1,79 @@
+name = "thepillboard-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── D1 Database ─────────────────────────────────────────────────────────────
+[[d1_databases]]
+binding = "DB"
+database_name = "pillboard-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "../../packages/db/migrations"
+
+# ─── KV Namespaces ────────────────────────────────────────────────────────────
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "REPLACE_WITH_YOUR_KV_SESSIONS_ID"
+preview_id = "REPLACE_WITH_YOUR_KV_SESSIONS_PREVIEW_ID"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_WITH_YOUR_KV_CACHE_ID"
+preview_id = "REPLACE_WITH_YOUR_KV_CACHE_PREVIEW_ID"
+
+# ─── R2 Bucket ────────────────────────────────────────────────────────────────
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "pillboard-media"
+preview_bucket_name = "pillboard-media-preview"
+
+# ─── Durable Objects ──────────────────────────────────────────────────────────
+[[durable_objects.bindings]]
+name = "GLOBAL_PRESENCE"
+class_name = "GlobalPresence"
+
+[[durable_objects.bindings]]
+name = "ROOM_PRESENCE"
+class_name = "RoomPresence"
+
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["GlobalPresence", "RoomPresence", "RateLimiter"]
+
+# ─── Secrets (set via `wrangler secret put`) ─────────────────────────────────
+# JWT_SECRET
+# GITHUB_CLIENT_ID
+# GITHUB_CLIENT_SECRET
+# GOOGLE_CLIENT_ID
+# GOOGLE_CLIENT_SECRET
+# RESEND_API_KEY
+
+# ─── Vars ────────────────────────────────────────────────────────────────────
+[vars]
+APP_URL = "https://thepillboard.com"
+SUBMISSION_COOLDOWN_SECONDS = "30"
+COMMENT_COOLDOWN_SECONDS = "10"
+MAX_SUBMISSIONS_PER_HOUR = "5"
+
+# ─── Preview Environment ──────────────────────────────────────────────────────
+[env.preview]
+name = "thepillboard-api-preview"
+
+[env.preview.vars]
+APP_URL = "https://preview.thepillboard.com"
+
+# ─── Production Environment ───────────────────────────────────────────────────
+[env.production]
+name = "thepillboard-api"
+
+[env.production.vars]
+APP_URL = "https://thepillboard.com"
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
+[[routes]]
+pattern = "api.thepillboard.com/*"
+zone_name = "thepillboard.com"

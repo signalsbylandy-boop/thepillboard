@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community Discussions
+    url: https://github.com/thepillboard/thepillboard/discussions
+    about: Use discussions for feature ideas and general questions

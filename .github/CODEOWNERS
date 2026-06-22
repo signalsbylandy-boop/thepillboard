@@ -1,0 +1,11 @@
+# Global owner — all files require review
+* @thepillboard/core
+
+# Infrastructure changes need extra eyes
+.github/ @thepillboard/core
+apps/api/wrangler.toml @thepillboard/core
+apps/api/src/durable-objects/ @thepillboard/core
+
+# DB schema changes always need review
+packages/db/src/schema.ts @thepillboard/core
+apps/api/drizzle/ @thepillboard/core
