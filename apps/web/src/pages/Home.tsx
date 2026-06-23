@@ -15,6 +15,16 @@ const SORT_OPTIONS: { value: SortOrder; label: string; icon: React.ReactNode }[]
 ]
 
 function HighlightCard({ post }: { post: Post }) {
+  const tag = post.tags[0]?.name ?? ''
+  const isHeSaid = post.tags.some(t => t.slug === 'he-said')
+  const isSheSaid = post.tags.some(t => t.slug === 'she-said')
+  const gradientClass = isHeSaid
+    ? 'from-blue-800 to-blue-950'
+    : isSheSaid
+      ? 'from-rose-800 to-rose-950'
+      : 'from-slate-700 to-slate-900'
+  const accentClass = isHeSaid ? 'text-blue-300' : isSheSaid ? 'text-rose-300' : 'text-orange-400'
+
   return (
     <Link
       to={`/p/${post.slug}`}
@@ -23,18 +33,19 @@ function HighlightCard({ post }: { post: Post }) {
       {post.ogImageUrl ? (
         <img src={post.ogImageUrl} alt="" className="w-full h-32 object-cover" loading="lazy" />
       ) : (
-        <div className="w-full h-32 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-          <span className="text-3xl font-black text-slate-500">P</span>
+        <div className={`w-full h-32 bg-gradient-to-br ${gradientClass} flex flex-col items-center justify-center gap-1`}>
+          {tag && <span className={`text-xs font-bold uppercase tracking-widest ${accentClass}`}>{tag}</span>}
+          <span className="text-2xl font-black text-slate-600">💬</span>
         </div>
       )}
       <div className="p-3 space-y-1">
-        {post.domain && (
-          <p className="text-xs text-slate-400 uppercase tracking-wide truncate">{post.domain}</p>
+        {tag && (
+          <p className={`text-xs font-bold uppercase tracking-wide truncate ${accentClass}`}>{tag}</p>
         )}
-        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight line-clamp-2 group-hover:text-orange-400 transition-colors">
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
           {post.title}
         </p>
-        <p className="text-xs text-orange-400 font-bold">{post.score} points</p>
+        <p className="text-xs text-orange-400 font-bold">{post.score} pts · {post.commentCount} comments</p>
       </div>
     </Link>
   )
@@ -73,10 +84,67 @@ function RisingStories({ posts }: { posts: Post[] }) {
   )
 }
 
+function HeSaidSheSaidScoreboard({ posts }: { posts: Post[] }) {
+  const debated = [...posts]
+    .filter((p) => p.upVotes + p.downVotes > 0)
+    .sort((a, b) => (b.upVotes + b.downVotes) - (a.upVotes + a.downVotes))
+    .slice(0, 5)
+
+  if (debated.length === 0) return null
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 to-rose-500 px-4 py-2.5">
+        <h2 className="text-xs font-bold text-white uppercase tracking-wider">He Said · She Said</h2>
+        <p className="text-xs text-white/70 mt-0.5">Most debated today</p>
+      </div>
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        {debated.map((post) => {
+          const total = post.upVotes + post.downVotes
+          const hePct = total > 0 ? Math.round((post.upVotes / total) * 100) : 50
+          const shePct = 100 - hePct
+          return (
+            <div key={post.id} className="px-4 py-3">
+              <Link
+                to={`/p/${post.slug}`}
+                className="text-xs font-medium text-slate-800 dark:text-slate-200 hover:text-orange-600 line-clamp-2 leading-snug mb-2 block transition-colors"
+              >
+                {post.title}
+              </Link>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-blue-600 font-bold w-8 text-right">{hePct}%</span>
+                <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-rose-500 transition-all"
+                    style={{ width: `${hePct}%` }}
+                  />
+                </div>
+                <span className="text-xs text-rose-500 font-bold w-8">{shePct}%</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-400 mt-0.5">
+                <span className="text-blue-500 font-medium">He Said</span>
+                <span className="text-rose-500 font-medium">She Said</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function TopTags() {
   const TAGS = [
-    'AI', 'Tech', 'Science', 'Gaming', 'Culture',
-    'Crypto', 'Space', 'Health', 'Climate', 'Startups',
+    { label: 'He Said', slug: 'he-said' },
+    { label: 'She Said', slug: 'she-said' },
+    { label: 'Dating', slug: 'dating' },
+    { label: 'Relationships', slug: 'relationships' },
+    { label: 'Culture', slug: 'culture' },
+    { label: 'Red Flags', slug: 'red-flags' },
+    { label: 'Hot Takes', slug: 'hot-takes' },
+    { label: 'Marriage', slug: 'marriage' },
+    { label: 'Divorce', slug: 'divorce' },
+    { label: 'Workplace', slug: 'workplace' },
   ]
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -86,57 +154,19 @@ function TopTags() {
       <div className="p-4 flex flex-wrap gap-2">
         {TAGS.map((tag) => (
           <Link
-            key={tag}
-            to={`/?tag=${tag.toLowerCase()}`}
-            className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-orange-100 hover:text-orange-700 dark:hover:bg-orange-900/30 dark:hover:text-orange-400 transition-colors"
+            key={tag.slug}
+            to={`/?tag=${tag.slug}`}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium transition-colors',
+              tag.slug === 'he-said'
+                ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
+                : tag.slug === 'she-said'
+                  ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-300'
+                  : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-orange-100 hover:text-orange-700 dark:hover:bg-orange-900/30 dark:hover:text-orange-400'
+            )}
           >
-            {tag}
+            {tag.label}
           </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const GITHUB_STARS = [
-  { name: 'microsoft/phi-4-mini', desc: 'Small but powerful reasoning model from Microsoft Research', stars: '12.4k', lang: 'Python', score: 9.2 },
-  { name: 'vercel/ai', desc: 'Build AI-powered streaming text and chat UIs', stars: '8.1k', lang: 'TypeScript', score: 8.7 },
-  { name: 'anthropics/claude-code', desc: 'Agentic coding tool that lives in your terminal', stars: '31.2k', lang: 'TypeScript', score: 9.8 },
-  { name: 'cloudflare/workers-sdk', desc: 'The toolchain for building on Cloudflare Workers', stars: '3.2k', lang: 'TypeScript', score: 7.4 },
-  { name: 'ollama/ollama', desc: 'Get up and running with large language models locally', stars: '89.3k', lang: 'Go', score: 8.9 },
-]
-
-function GitHubStars() {
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="bg-slate-800 dark:bg-slate-900 px-4 py-2.5 flex items-center gap-2">
-        <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-        </svg>
-        <h2 className="text-xs font-bold text-white uppercase tracking-wider">GitHub Stars</h2>
-      </div>
-      <div className="divide-y divide-slate-100 dark:divide-slate-700">
-        {GITHUB_STARS.map((repo) => (
-          <div key={repo.name} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-            <div className="flex items-start justify-between gap-2">
-              <a
-                href={`https://github.com/${repo.name}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-orange-600 hover:text-orange-500 transition-colors truncate"
-              >
-                {repo.name}
-              </a>
-              <span className="shrink-0 text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
-                {repo.score}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{repo.desc}</p>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-xs text-slate-400">⭐ {repo.stars}</span>
-              <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500">{repo.lang}</span>
-            </div>
-          </div>
         ))}
       </div>
     </div>
@@ -170,6 +200,7 @@ export function HomePage() {
 
   const highlights = hotData?.items.slice(0, 5) ?? []
   const rising = newData?.items ?? []
+  const allPosts = data?.items ?? []
 
   const setSort = (s: SortOrder) => {
     const next = new URLSearchParams(params)
@@ -185,6 +216,10 @@ export function HomePage() {
     day: 'numeric',
   })
 
+  const sectionLabel = tag
+    ? tag.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : 'Top Stories'
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Highlights strip */}
@@ -197,7 +232,7 @@ export function HomePage() {
               </h2>
               <span className="text-xs text-slate-400">{today}</span>
             </div>
-            <div className="flex gap-4 py-4 overflow-x-auto">
+            <div className="flex gap-4 py-4 overflow-x-auto pb-4">
               {highlights.map((post) => (
                 <HighlightCard key={post.id} post={post} />
               ))}
@@ -215,7 +250,7 @@ export function HomePage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <h1 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                  {tag ? `#${tag}` : 'Top Stories'}
+                  {sectionLabel}
                 </h1>
                 <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
                 <span className="text-xs text-slate-400">{today}</span>
@@ -257,10 +292,11 @@ export function HomePage() {
                 Failed to load posts. Please try again.
               </div>
             ) : !data?.items.length ? (
-              <div className="bg-white rounded-lg p-8 text-center text-slate-500 border border-slate-200">
-                No posts yet.{' '}
-                <Link to="/submit" className="text-orange-500 hover:underline">
-                  Be the first to submit!
+              <div className="bg-white rounded-lg p-12 text-center border border-slate-200">
+                <div className="text-4xl mb-3">💬</div>
+                <p className="text-slate-500 mb-3">No posts yet in this category.</p>
+                <Link to="/submit" className="text-orange-500 hover:underline font-medium">
+                  Be the first to share your perspective!
                 </Link>
               </div>
             ) : (
@@ -306,9 +342,9 @@ export function HomePage() {
 
           {/* Right sidebar */}
           <aside className="w-72 shrink-0 hidden lg:flex flex-col gap-4">
+            <HeSaidSheSaidScoreboard posts={allPosts} />
             {rising.length > 0 && <RisingStories posts={rising} />}
             <TopTags />
-            <GitHubStars />
           </aside>
         </div>
       </div>

@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 
-const CATEGORIES = ['Tech', 'AI', 'Science', 'Gaming', 'Culture', 'Crypto', 'Space']
+const CATEGORIES = [
+  { label: 'He Said', slug: 'he-said' },
+  { label: 'She Said', slug: 'she-said' },
+  { label: 'Dating', slug: 'dating' },
+  { label: 'Relationships', slug: 'relationships' },
+  { label: 'Culture', slug: 'culture' },
+  { label: 'Red Flags', slug: 'red-flags' },
+  { label: 'Hot Takes', slug: 'hot-takes' },
+]
 
 export function Header() {
   const { user, isAuthenticated, isMod, logout } = useAuth()
@@ -43,28 +51,34 @@ export function Header() {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-1.5 shrink-0 pr-4 border-r border-slate-700"
+          className="flex items-center gap-2 shrink-0 pr-4 border-r border-slate-700"
         >
           <span className="text-orange-500 font-black text-xl leading-none">●</span>
-          <span className="text-white font-black text-base tracking-tight uppercase">
-            Pillboard
-          </span>
+          <div className="flex flex-col leading-none">
+            <span className="text-slate-400 font-medium text-[9px] uppercase tracking-widest">The</span>
+            <span className="text-white font-black text-sm tracking-tight uppercase leading-none">Pillboard</span>
+          </div>
+          <span className="hidden lg:block text-slate-600 text-[10px] italic ml-1 self-end pb-0.5">he said · she said</span>
         </Link>
 
         {/* Category tabs */}
         <nav className="hidden md:flex items-stretch h-12 divide-x divide-slate-700 border-r border-slate-700">
           {CATEGORIES.map((cat) => (
             <Link
-              key={cat}
-              to={`/?tag=${cat.toLowerCase()}`}
+              key={cat.slug}
+              to={`/?tag=${cat.slug}`}
               className={cn(
-                'px-4 flex items-center text-xs font-bold uppercase tracking-wide transition-colors',
-                activeTag === cat.toLowerCase()
-                  ? 'text-orange-400 bg-slate-800'
+                'px-3.5 flex items-center text-[11px] font-bold uppercase tracking-wide transition-colors whitespace-nowrap',
+                activeTag === cat.slug
+                  ? cat.slug === 'he-said'
+                    ? 'text-blue-400 bg-slate-800'
+                    : cat.slug === 'she-said'
+                      ? 'text-rose-400 bg-slate-800'
+                      : 'text-orange-400 bg-slate-800'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               )}
             >
-              {cat}
+              {cat.label}
             </Link>
           ))}
         </nav>
