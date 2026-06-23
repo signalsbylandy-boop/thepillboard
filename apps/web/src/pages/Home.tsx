@@ -14,38 +14,56 @@ const SORT_OPTIONS: { value: SortOrder; label: string; icon: React.ReactNode }[]
   { value: 'top', label: 'Top', icon: <TrendingUp className="w-3.5 h-3.5" /> },
 ]
 
-function HighlightCard({ post }: { post: Post }) {
-  const tag = post.tags[0]?.name ?? ''
+function HighlightCard({ post, animIndex }: { post: Post; animIndex?: number }) {
+  const firstSlug = post.tags[0]?.slug ?? ''
   const isHeSaid = post.tags.some(t => t.slug === 'he-said')
   const isSheSaid = post.tags.some(t => t.slug === 'she-said')
+
   const gradientClass = isHeSaid
-    ? 'from-blue-800 to-blue-950'
+    ? 'from-blue-700 to-blue-950'
     : isSheSaid
-      ? 'from-rose-800 to-rose-950'
-      : 'from-slate-700 to-slate-900'
-  const accentClass = isHeSaid ? 'text-blue-300' : isSheSaid ? 'text-rose-300' : 'text-orange-400'
+      ? 'from-rose-600 to-rose-950'
+      : firstSlug.includes('dating')
+        ? 'from-amber-600 to-orange-950'
+        : firstSlug.includes('hot-takes')
+          ? 'from-violet-700 to-purple-950'
+          : firstSlug.includes('red-flags')
+            ? 'from-red-700 to-red-950'
+            : firstSlug.includes('relationship') || firstSlug.includes('marriage')
+              ? 'from-teal-700 to-cyan-950'
+              : 'from-slate-700 to-slate-950'
+
+  const accentText = isHeSaid ? 'text-blue-300' : isSheSaid ? 'text-rose-300' : 'text-orange-300'
+  const tagLabel = post.tags[0]?.name ?? 'Pillboard'
 
   return (
     <Link
       to={`/p/${post.slug}`}
-      className="group flex-shrink-0 w-56 bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm border border-slate-700 hover:shadow-md transition-shadow"
+      className="group flex-shrink-0 w-60 rounded-xl overflow-hidden shadow-md border border-slate-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-pop-in"
+      style={{ animationDelay: `${(animIndex ?? 0) * 60}ms` }}
     >
       {post.ogImageUrl ? (
-        <img src={post.ogImageUrl} alt="" className="w-full h-32 object-cover" loading="lazy" />
+        <img src={post.ogImageUrl} alt="" className="w-full h-36 object-cover" loading="lazy" />
       ) : (
-        <div className={`w-full h-32 bg-gradient-to-br ${gradientClass} flex flex-col items-center justify-center gap-1`}>
-          {tag && <span className={`text-xs font-bold uppercase tracking-widest ${accentClass}`}>{tag}</span>}
-          <span className="text-2xl font-black text-slate-600">💬</span>
+        <div className={cn('w-full h-36 flex flex-col justify-between p-4 relative overflow-hidden bg-gradient-to-br', gradientClass)}>
+          <span className="absolute top-0 left-2 text-7xl font-serif text-white/10 leading-none select-none">"</span>
+          <p className="text-sm text-white/90 font-medium leading-snug pt-5 line-clamp-3 relative z-10">
+            {post.text?.slice(0, 110) ?? post.title}
+          </p>
+          <div className="flex items-center justify-between relative z-10 mt-2">
+            <span className={cn('text-xs font-mono uppercase tracking-wider', accentText)}>{tagLabel}</span>
+            <span className="text-xs text-white/80 font-mono font-semibold">{post.score} pts</span>
+          </div>
         </div>
       )}
-      <div className="p-3 space-y-1">
-        {tag && (
-          <p className={`text-xs font-bold uppercase tracking-wide truncate ${accentClass}`}>{tag}</p>
-        )}
-        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
+      <div className="p-3 space-y-1.5 bg-white dark:bg-slate-800">
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors">
           {post.title}
         </p>
-        <p className="text-xs text-orange-400 font-bold">{post.score} pts · {post.commentCount} comments</p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-orange-500 font-mono font-semibold">{post.score} pts</span>
+          <span className="text-xs text-slate-400 font-mono">{tagLabel}</span>
+        </div>
       </div>
     </Link>
   )
@@ -55,7 +73,7 @@ function RisingStories({ posts }: { posts: Post[] }) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="bg-slate-800 dark:bg-slate-900 px-4 py-2.5">
-        <h2 className="text-xs font-bold text-white uppercase tracking-wider">Rising Stories</h2>
+        <h2 className="text-xs font-condensed font-bold text-white uppercase tracking-widest">Rising Stories</h2>
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-700">
         {posts.slice(0, 8).map((post, i) => (
@@ -95,7 +113,7 @@ function HeSaidSheSaidScoreboard({ posts }: { posts: Post[] }) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-rose-500 px-4 py-2.5">
-        <h2 className="text-xs font-bold text-white uppercase tracking-wider">He Said · She Said</h2>
+        <h2 className="text-xs font-condensed font-bold text-white uppercase tracking-widest">He Said · She Said</h2>
         <p className="text-xs text-white/70 mt-0.5">Most debated today</p>
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -149,7 +167,7 @@ function TopTags() {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="bg-slate-800 dark:bg-slate-900 px-4 py-2.5">
-        <h2 className="text-xs font-bold text-white uppercase tracking-wider">Browse by Topic</h2>
+        <h2 className="text-xs font-condensed font-bold text-white uppercase tracking-widest">Browse by Topic</h2>
       </div>
       <div className="p-4 flex flex-wrap gap-2">
         {TAGS.map((tag) => (
@@ -180,7 +198,7 @@ export function HomePage() {
   const page = parseInt(params.get('page') ?? '1', 10)
   const { token } = useAuthStore()
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['posts', sort, tag, page, token],
     queryFn: () => postsApi.list({ sort, tag, page, pageSize: 25 }, token ?? undefined),
     staleTime: 30_000,
@@ -227,14 +245,14 @@ export function HomePage() {
         <div className="bg-slate-900 border-b border-slate-700">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between py-2.5 border-b border-slate-700">
-              <h2 className="text-xs font-bold text-white uppercase tracking-widest">
+              <h2 className="text-xs font-condensed font-bold text-white uppercase tracking-widest">
                 Today's Highlights
               </h2>
               <span className="text-xs text-slate-400">{today}</span>
             </div>
             <div className="flex gap-4 py-4 overflow-x-auto pb-4">
-              {highlights.map((post) => (
-                <HighlightCard key={post.id} post={post} />
+              {highlights.map((post, i) => (
+                <HighlightCard key={post.id} post={post} animIndex={i} />
               ))}
             </div>
           </div>
@@ -249,7 +267,7 @@ export function HomePage() {
             {/* Section header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <h1 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                <h1 className="text-sm font-condensed font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">
                   {sectionLabel}
                 </h1>
                 <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
@@ -288,8 +306,14 @@ export function HomePage() {
                 <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
               </div>
             ) : isError ? (
-              <div className="bg-white rounded-lg p-8 text-center text-slate-500 border border-slate-200">
-                Failed to load posts. Please try again.
+              <div className="bg-white rounded-lg p-8 text-center border border-red-200 bg-red-50">
+                <p className="text-red-600 font-semibold mb-1">Failed to load posts</p>
+                <p className="text-xs text-red-400 font-mono break-all">
+                  {(error as Error)?.message ?? 'Unknown error — check browser console (F12) for details'}
+                </p>
+                <p className="text-xs text-slate-400 mt-3">
+                  API: {import.meta.env.VITE_API_URL ?? '(not set — using /api fallback)'}
+                </p>
               </div>
             ) : !data?.items.length ? (
               <div className="bg-white rounded-lg p-12 text-center border border-slate-200">
@@ -341,7 +365,7 @@ export function HomePage() {
           </main>
 
           {/* Right sidebar */}
-          <aside className="w-72 shrink-0 hidden lg:flex flex-col gap-4">
+          <aside className="w-72 shrink-0 hidden lg:flex flex-col gap-4 animate-slide-in-left" style={{ animationDelay: '120ms' }}>
             <HeSaidSheSaidScoreboard posts={allPosts} />
             {rising.length > 0 && <RisingStories posts={rising} />}
             <TopTags />

@@ -36,7 +36,11 @@ app.use(
         'http://localhost:5173',
         'http://localhost:4173',
       ]
-      return allowed.includes(origin) ? origin : null
+      if (allowed.includes(origin)) return origin
+      // Allow all Cloudflare Pages preview deployments
+      if (origin?.endsWith('.thepillboard-web.pages.dev')) return origin
+      if (origin?.endsWith('.pages.dev')) return origin
+      return null
     },
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
