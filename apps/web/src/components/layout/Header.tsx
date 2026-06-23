@@ -1,13 +1,16 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { PenSquare, LogOut, Shield, User, Moon, Sun } from 'lucide-react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { LogOut, Shield, User, Moon, Sun, PenSquare } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { GlobalPresenceBadge } from '@/components/realtime/LivePresence'
 import { cn } from '@/lib/utils'
+
+const CATEGORIES = ['Tech', 'AI', 'Science', 'Gaming', 'Culture', 'Crypto', 'Space']
 
 export function Header() {
   const { user, isAuthenticated, isMod, logout } = useAuth()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const activeTag = params.get('tag')
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     document.documentElement.classList.contains('dark') ? 'dark' : 'light'
   )
@@ -35,27 +38,44 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm">
-      <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-4">
+    <header className="sticky top-0 z-50 bg-slate-900 dark:bg-slate-950 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-0">
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-1.5 font-bold text-lg text-brand-600 dark:text-brand-400 hover:opacity-80 shrink-0"
+          className="flex items-center gap-1.5 shrink-0 pr-4 border-r border-slate-700"
         >
-          <span className="text-xl">●</span>
-          <span>thepillboard</span>
+          <span className="text-orange-500 font-black text-xl leading-none">●</span>
+          <span className="text-white font-black text-base tracking-tight uppercase">
+            Pillboard
+          </span>
         </Link>
 
-        {/* Live presence badge */}
-        <div className="hidden md:flex flex-1">
-          <GlobalPresenceBadge />
-        </div>
+        {/* Category tabs */}
+        <nav className="hidden md:flex items-stretch h-12 divide-x divide-slate-700 border-r border-slate-700">
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat}
+              to={`/?tag=${cat.toLowerCase()}`}
+              className={cn(
+                'px-4 flex items-center text-xs font-bold uppercase tracking-wide transition-colors',
+                activeTag === cat.toLowerCase()
+                  ? 'text-orange-400 bg-slate-800'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              )}
+            >
+              {cat}
+            </Link>
+          ))}
+        </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          {/* Theme toggle */}
+        <div className="flex-1" />
+
+        {/* Right controls */}
+        <div className="flex items-center gap-1">
           <button
             onClick={toggleTheme}
-            className="btn-ghost p-2"
+            className="p-2 text-slate-400 hover:text-white transition-colors"
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -63,51 +83,51 @@ export function Header() {
 
           {isAuthenticated ? (
             <>
-              <Link to="/submit" className="btn-primary text-xs px-3 py-1.5 gap-1">
+              <Link
+                to="/submit"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded transition-colors ml-1"
+              >
                 <PenSquare className="w-3.5 h-3.5" />
                 Submit
               </Link>
 
-              <div className="relative">
+              <div className="relative ml-1">
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
-                    menuOpen && 'bg-zinc-100 dark:bg-zinc-800'
-                  )}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-slate-800 transition-colors"
                 >
-                  <div className="w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
                     {user?.username[0]?.toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-zinc-700 dark:text-zinc-300 max-w-[80px] truncate">
+                  <span className="hidden sm:block text-slate-300 text-xs max-w-[80px] truncate">
                     {user?.username}
                   </span>
                 </button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-48 card shadow-lg py-1 z-50 animate-slide-up">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50">
                     <Link
                       to={`/u/${user?.username}`}
-                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       onClick={() => setMenuOpen(false)}
                     >
                       <User className="w-4 h-4" />
-                      Profile
+                      {user?.username}
                     </Link>
                     {isMod && (
                       <Link
                         to="/moderation"
-                        className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 text-orange-600"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-orange-600 hover:bg-slate-50 dark:hover:bg-slate-800"
                         onClick={() => setMenuOpen(false)}
                       >
                         <Shield className="w-4 h-4" />
                         Moderation
                       </Link>
                     )}
-                    <hr className="my-1 border-zinc-100 dark:border-zinc-800" />
+                    <hr className="my-1 border-slate-100 dark:border-slate-800" />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 text-red-600 dark:text-red-400"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-slate-800"
                     >
                       <LogOut className="w-4 h-4" />
                       Log out
@@ -118,16 +138,21 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link to="/login" className="btn-ghost text-sm">Log in</Link>
-              <Link to="/register" className="btn-primary text-sm">Sign up</Link>
+              <Link
+                to="/login"
+                className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/register"
+                className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded transition-colors"
+              >
+                Sign up
+              </Link>
             </>
           )}
         </div>
-      </div>
-
-      {/* Mobile presence bar */}
-      <div className="md:hidden px-4 pb-1.5 flex justify-center">
-        <GlobalPresenceBadge />
       </div>
     </header>
   )
