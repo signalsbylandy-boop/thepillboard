@@ -14,58 +14,90 @@ const SORT_OPTIONS: { value: SortOrder; label: string; icon: React.ReactNode }[]
   { value: 'top', label: 'Top', icon: <TrendingUp className="w-3.5 h-3.5" /> },
 ]
 
-function HighlightCard({ post, animIndex }: { post: Post; animIndex?: number }) {
+function postGradient(post: Post) {
   const firstSlug = post.tags[0]?.slug ?? ''
   const isHeSaid = post.tags.some(t => t.slug === 'he-said')
   const isSheSaid = post.tags.some(t => t.slug === 'she-said')
+  if (isHeSaid) return 'from-blue-700 via-blue-800 to-blue-950'
+  if (isSheSaid) return 'from-rose-600 via-rose-700 to-rose-950'
+  if (firstSlug.includes('dating')) return 'from-amber-600 via-orange-700 to-orange-950'
+  if (firstSlug.includes('hot-takes')) return 'from-violet-700 via-purple-800 to-purple-950'
+  if (firstSlug.includes('red-flags')) return 'from-red-700 via-red-800 to-red-950'
+  if (firstSlug.includes('relationship') || firstSlug.includes('marriage')) return 'from-teal-700 via-teal-800 to-cyan-950'
+  return 'from-slate-600 via-slate-700 to-slate-900'
+}
 
-  const gradientClass = isHeSaid
-    ? 'from-blue-700 to-blue-950'
-    : isSheSaid
-      ? 'from-rose-600 to-rose-950'
-      : firstSlug.includes('dating')
-        ? 'from-amber-600 to-orange-950'
-        : firstSlug.includes('hot-takes')
-          ? 'from-violet-700 to-purple-950'
-          : firstSlug.includes('red-flags')
-            ? 'from-red-700 to-red-950'
-            : firstSlug.includes('relationship') || firstSlug.includes('marriage')
-              ? 'from-teal-700 to-cyan-950'
-              : 'from-slate-700 to-slate-950'
-
-  const accentText = isHeSaid ? 'text-blue-300' : isSheSaid ? 'text-rose-300' : 'text-orange-300'
-  const tagLabel = post.tags[0]?.name ?? 'Pillboard'
+function FeaturedGrid({ posts }: { posts: Post[] }) {
+  if (posts.length === 0) return null
+  const [hero, ...rest] = posts.slice(0, 5)
 
   return (
-    <Link
-      to={`/p/${post.slug}`}
-      className="group flex-shrink-0 w-60 rounded-xl overflow-hidden shadow-md border border-slate-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-pop-in"
-      style={{ animationDelay: `${(animIndex ?? 0) * 60}ms` }}
-    >
-      {post.ogImageUrl ? (
-        <img src={post.ogImageUrl} alt="" className="w-full h-36 object-cover" loading="lazy" />
-      ) : (
-        <div className={cn('w-full h-36 flex flex-col justify-between p-4 relative overflow-hidden bg-gradient-to-br', gradientClass)}>
-          <span className="absolute top-0 left-2 text-7xl font-serif text-white/10 leading-none select-none">"</span>
-          <p className="text-sm text-white/90 font-medium leading-snug pt-5 line-clamp-3 relative z-10">
-            {post.text?.slice(0, 110) ?? post.title}
-          </p>
-          <div className="flex items-center justify-between relative z-10 mt-2">
-            <span className={cn('text-xs font-mono uppercase tracking-wider', accentText)}>{tagLabel}</span>
-            <span className="text-xs text-white/80 font-mono font-semibold">{post.score} pts</span>
+    <div className="grid grid-cols-5 gap-3 py-4">
+      {/* Hero — 3 cols wide, full height */}
+      <Link
+        to={`/p/${hero.slug}`}
+        className="col-span-3 group relative rounded-xl overflow-hidden border border-slate-700 hover:border-slate-500 transition-all duration-200 animate-pop-in shadow-xl min-h-[200px]"
+      >
+        {hero.ogImageUrl ? (
+          <>
+            <img src={hero.ogImageUrl} alt="" className="w-full h-full object-cover absolute inset-0" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+          </>
+        ) : (
+          <div className={cn('absolute inset-0 bg-gradient-to-br', postGradient(hero))}>
+            <span className="absolute top-2 left-4 text-9xl font-serif text-white/5 leading-none select-none">"</span>
           </div>
+        )}
+        <div className="absolute inset-0 flex flex-col justify-end p-5">
+          <div className="flex items-center gap-2 mb-2">
+            {hero.tags[0] && (
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-orange-400 bg-black/30 px-2 py-0.5 rounded-full">
+                {hero.tags[0].name}
+              </span>
+            )}
+            <span className="text-[10px] font-mono text-white/50">{hero.score} pts</span>
+          </div>
+          <p className="text-base sm:text-lg font-bold text-white leading-snug line-clamp-3 group-hover:text-orange-300 transition-colors drop-shadow-md">
+            {hero.title}
+          </p>
+          {(hero.text || hero.ogDescription) && (
+            <p className="text-xs text-white/60 mt-1.5 line-clamp-2 font-normal leading-relaxed hidden sm:block">
+              {hero.text?.slice(0, 100) ?? hero.ogDescription?.slice(0, 100)}
+            </p>
+          )}
         </div>
-      )}
-      <div className="p-3 space-y-1.5 bg-white dark:bg-slate-800">
-        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors">
-          {post.title}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-orange-500 font-mono font-semibold">{post.score} pts</span>
-          <span className="text-xs text-slate-400 font-mono">{tagLabel}</span>
-        </div>
+      </Link>
+
+      {/* 2×2 mini grid — 2 cols */}
+      <div className="col-span-2 grid grid-cols-2 gap-3">
+        {rest.map((post, i) => {
+          const tagLabel = post.tags[0]?.name ?? 'Pillboard'
+          return (
+            <Link
+              key={post.id}
+              to={`/p/${post.slug}`}
+              className="group relative rounded-xl overflow-hidden border border-slate-700 hover:border-slate-500 transition-all duration-200 animate-pop-in min-h-[96px]"
+              style={{ animationDelay: `${(i + 1) * 60}ms` }}
+            >
+              {post.ogImageUrl ? (
+                <>
+                  <img src={post.ogImageUrl} alt="" className="w-full h-full object-cover absolute inset-0" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-slate-950/10" />
+                </>
+              ) : (
+                <div className={cn('absolute inset-0 bg-gradient-to-br', postGradient(post))} />
+              )}
+              <div className="absolute inset-0 flex flex-col justify-end p-2.5">
+                <span className="text-[9px] font-mono text-orange-400/80 uppercase tracking-widest mb-1">{tagLabel}</span>
+                <p className="text-xs font-semibold text-white leading-snug line-clamp-2 group-hover:text-orange-300 transition-colors drop-shadow">
+                  {post.title}
+                </p>
+              </div>
+            </Link>
+          )
+        })}
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -240,21 +272,17 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Highlights strip */}
+      {/* Featured stories grid */}
       {!tag && highlights.length > 0 && (
         <div className="bg-slate-900 border-b border-slate-700">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between py-2.5 border-b border-slate-700">
+            <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50">
               <h2 className="text-xs font-condensed font-bold text-white uppercase tracking-widest">
                 Today's Highlights
               </h2>
-              <span className="text-xs text-slate-400">{today}</span>
+              <span className="text-xs text-slate-500 font-mono">{today}</span>
             </div>
-            <div className="flex gap-4 py-4 overflow-x-auto pb-4">
-              {highlights.map((post, i) => (
-                <HighlightCard key={post.id} post={post} animIndex={i} />
-              ))}
-            </div>
+            <FeaturedGrid posts={highlights} />
           </div>
         </div>
       )}
@@ -333,33 +361,30 @@ export function HomePage() {
 
             {/* Pagination */}
             {data && (data.hasMore || page > 1) && (
-              <div className="flex justify-between mt-4">
-                {page > 1 ? (
-                  <button
-                    onClick={() => {
-                      const n = new URLSearchParams(params)
-                      n.set('page', String(page - 1))
-                      setParams(n)
-                    }}
-                    className="px-4 py-2 text-sm border border-slate-200 rounded hover:bg-slate-100 text-slate-600 transition-colors"
-                  >
-                    ← Previous
-                  </button>
-                ) : (
-                  <div />
-                )}
-                {data.hasMore && (
-                  <button
-                    onClick={() => {
-                      const n = new URLSearchParams(params)
-                      n.set('page', String(page + 1))
-                      setParams(n)
-                    }}
-                    className="px-4 py-2 text-sm border border-slate-200 rounded hover:bg-slate-100 text-slate-600 transition-colors"
-                  >
-                    Next page →
-                  </button>
-                )}
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    const n = new URLSearchParams(params)
+                    n.set('page', String(page - 1))
+                    setParams(n)
+                  }}
+                  disabled={page <= 1}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  ← Prev
+                </button>
+                <span className="text-xs text-slate-400 font-mono px-2">Page {page}</span>
+                <button
+                  onClick={() => {
+                    const n = new URLSearchParams(params)
+                    n.set('page', String(page + 1))
+                    setParams(n)
+                  }}
+                  disabled={!data.hasMore}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Next →
+                </button>
               </div>
             )}
           </main>

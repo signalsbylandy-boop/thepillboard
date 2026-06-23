@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { MessageSquare, ExternalLink } from 'lucide-react'
 import type { Post } from '@pillboard/types'
 import { VoteButton } from './VoteButton'
@@ -12,29 +12,26 @@ interface PostCardProps {
 
 export function PostCard({ post, index }: PostCardProps) {
   const viewerCount = usePresenceStore((s) => s.getRoomCount(post.id))
+  const navigate = useNavigate()
 
   return (
     <article
-      className="relative flex items-start gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group animate-fade-in"
+      className="flex items-start gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group animate-fade-in cursor-pointer"
       style={{ animationDelay: `${(index ?? 0) * 35}ms` }}
+      onClick={(e) => {
+        if ((e.target as Element).closest('a, button')) return
+        navigate(`/p/${post.slug}`)
+      }}
     >
-      {/* Cover link — makes whole card clickable; interactive children sit above via z-10 */}
-      <Link
-        to={`/p/${post.slug}`}
-        className="absolute inset-0 z-0"
-        aria-hidden="true"
-        tabIndex={-1}
-      />
-
       {/* Rank */}
       {index !== undefined && (
-        <div className="relative z-10 w-5 text-right text-xs text-slate-300 dark:text-slate-600 font-mono shrink-0 pt-1.5 select-none">
+        <div className="w-5 text-right text-xs text-slate-300 dark:text-slate-600 font-mono shrink-0 pt-1.5 select-none">
           {index + 1}
         </div>
       )}
 
       {/* Vote */}
-      <div className="relative z-10 shrink-0 pt-0.5">
+      <div className="shrink-0 pt-0.5">
         <VoteButton
           targetId={post.id}
           targetType="post"
@@ -47,7 +44,7 @@ export function PostCard({ post, index }: PostCardProps) {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex-1 min-w-0 space-y-1">
+      <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-start gap-2">
           <Link
             to={`/p/${post.slug}`}
@@ -70,7 +67,7 @@ export function PostCard({ post, index }: PostCardProps) {
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 font-mono">
           {post.domain && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-medium font-sans">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-medium font-sans text-[11px]">
               {post.domain}
             </span>
           )}
@@ -101,7 +98,7 @@ export function PostCard({ post, index }: PostCardProps) {
                 <Link
                   key={tag.id}
                   to={`/?tag=${tag.slug}`}
-                  className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-orange-100 hover:text-orange-600 transition-colors font-medium font-sans"
+                  className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-orange-100 hover:text-orange-600 transition-colors font-medium font-sans text-[11px]"
                 >
                   {tag.name}
                 </Link>
@@ -113,7 +110,7 @@ export function PostCard({ post, index }: PostCardProps) {
 
       {/* OG Image thumbnail */}
       {post.ogImageUrl && (
-        <div className="relative z-10 shrink-0 hidden sm:block ml-2">
+        <div className="shrink-0 hidden sm:block ml-2">
           <img
             src={post.ogImageUrl}
             alt=""

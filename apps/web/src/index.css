@@ -3,73 +3,93 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-zinc-200 dark:border-zinc-800;
-  }
-
-  :root {
-    --brand: 234 88 12;
-  }
-
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply font-sans bg-slate-50 dark:bg-slate-950;
+    @apply font-sans bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased;
   }
 
+  /* Minimal global scrollbar — only on vertical scroll */
   ::-webkit-scrollbar {
-    @apply w-1.5;
+    @apply w-1;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+    @apply bg-slate-200 dark:bg-slate-700 rounded-full;
   }
+
+  /* Hide scrollbar on horizontal containers */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
 }
 
 @layer components {
+  /* ── Buttons ──────────────────────────────────────────────────────────── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500
-      disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold
+      transition-all duration-150
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2
+      disabled:pointer-events-none disabled:opacity-40
+      select-none;
   }
 
   .btn-primary {
-    @apply btn bg-orange-500 text-white hover:bg-orange-600 px-4 py-2;
+    @apply btn bg-orange-500 text-white hover:bg-orange-600 active:scale-95 px-4 py-2 shadow-sm;
   }
 
   .btn-ghost {
-    @apply btn hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-2 text-slate-700 dark:text-slate-300;
+    @apply btn hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 px-3 py-2
+      text-slate-700 dark:text-slate-300;
   }
 
   .btn-outline {
-    @apply btn border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 text-slate-600 dark:text-slate-400;
+    @apply btn border border-slate-300 dark:border-slate-600
+      hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95
+      px-4 py-2 text-slate-700 dark:text-slate-300;
   }
 
+  /* ── Form inputs ──────────────────────────────────────────────────────── */
   .input {
-    @apply flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-700
+    @apply flex h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700
       bg-white dark:bg-slate-900 px-3 py-2 text-sm
       placeholder:text-slate-400 dark:placeholder:text-slate-600
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500
+      transition-shadow
       disabled:cursor-not-allowed disabled:opacity-50;
   }
 
-  .card {
-    @apply rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800;
+  textarea.input {
+    @apply h-auto;
   }
 
+  /* ── Cards ────────────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-xl border border-slate-200 dark:border-slate-700
+      bg-white dark:bg-slate-800 shadow-sm;
+  }
+
+  /* ── Tag pills ────────────────────────────────────────────────────────── */
+  .tag-pill {
+    @apply px-2.5 py-0.5 rounded-full text-xs font-medium
+      bg-slate-100 dark:bg-slate-700
+      text-slate-600 dark:text-slate-300
+      hover:bg-orange-50 hover:text-orange-700
+      dark:hover:bg-orange-900/30 dark:hover:text-orange-300
+      transition-colors cursor-pointer;
+  }
+
+  /* ── Live indicator ───────────────────────────────────────────────────── */
   .live-dot {
     @apply inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse;
   }
 
-  .tag-pill {
-    @apply px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-700 transition-colors;
-  }
-
-  .domain-badge {
-    @apply text-xs text-slate-500 hover:text-orange-600 transition-colors;
+  /* ── Section headers ──────────────────────────────────────────────────── */
+  .section-label {
+    @apply text-[10px] font-condensed font-bold uppercase tracking-widest
+      text-slate-500 dark:text-slate-400;
   }
 }
