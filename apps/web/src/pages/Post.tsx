@@ -238,7 +238,7 @@ function CommentSentiment({ comments }: { comments: Comment[] }) {
   return (
     <div className="flex items-center gap-2 text-xs text-slate-500">
       <div className="w-20 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-        <div className="h-full bg-green-400 rounded-full" style={{ width: `${pct}%` }} />
+        <div className="h-full bg-orange-400 rounded-full" style={{ width: `${pct}%` }} />
       </div>
       <span>{pct}% positive</span>
     </div>

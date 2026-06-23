@@ -7,7 +7,7 @@ export function GlobalPresenceBadge() {
   return (
     <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
       {wsStatus === 'connected' ? (
-        <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+        <span className="flex items-center gap-1 text-orange-500 dark:text-orange-400">
           <span className="live-dot" />
           live
         </span>

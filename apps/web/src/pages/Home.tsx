@@ -15,15 +15,10 @@ const SORT_OPTIONS: { value: SortOrder; label: string; icon: React.ReactNode }[]
 ]
 
 function postGradient(post: Post) {
-  const firstSlug = post.tags[0]?.slug ?? ''
   const isHeSaid = post.tags.some(t => t.slug === 'he-said')
   const isSheSaid = post.tags.some(t => t.slug === 'she-said')
-  if (isHeSaid) return 'from-blue-700 via-blue-800 to-blue-950'
-  if (isSheSaid) return 'from-rose-600 via-rose-700 to-rose-950'
-  if (firstSlug.includes('dating')) return 'from-amber-600 via-orange-700 to-orange-950'
-  if (firstSlug.includes('hot-takes')) return 'from-violet-700 via-purple-800 to-purple-950'
-  if (firstSlug.includes('red-flags')) return 'from-red-700 via-red-800 to-red-950'
-  if (firstSlug.includes('relationship') || firstSlug.includes('marriage')) return 'from-teal-700 via-teal-800 to-cyan-950'
+  if (isHeSaid) return 'from-blue-700 via-blue-800 to-slate-950'
+  if (isSheSaid) return 'from-rose-600 via-rose-800 to-slate-950'
   return 'from-slate-600 via-slate-700 to-slate-900'
 }
 
@@ -111,7 +106,7 @@ function RisingStories({ posts }: { posts: Post[] }) {
         {posts.slice(0, 8).map((post, i) => (
           <div
             key={post.id}
-            className="px-4 py-3 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
+            className="px-4 py-3 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
           >
             <span className="text-xs font-mono text-slate-300 pt-0.5 w-4 shrink-0 select-none">
               {i + 1}

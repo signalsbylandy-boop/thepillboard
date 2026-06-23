@@ -33,7 +33,6 @@ export function VoteButton({
   const vote = useMutation({
     mutationFn: (value: 1 | -1) => votesApi.vote({ targetId, targetType, value }, token!),
     onMutate: async (value) => {
-      // Optimistic update
       const prevVote = localVote
       const delta = prevVote === value ? -value : prevVote !== null ? value * 2 : value
       setLocalScore((s) => s + delta)
@@ -60,11 +59,11 @@ export function VoteButton({
         disabled={!isAuthenticated || vote.isPending}
         title={isAuthenticated ? 'Upvote' : 'Log in to vote'}
         className={cn(
-          'p-0.5 rounded transition-colors',
-          isAuthenticated ? 'hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'cursor-not-allowed opacity-60',
+          'p-0.5 rounded transition-colors active:scale-90',
+          isAuthenticated ? 'hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'cursor-not-allowed opacity-50',
           localVote === 1
             ? 'text-orange-500'
-            : 'text-zinc-400 dark:text-zinc-600 hover:text-orange-500'
+            : 'text-slate-300 dark:text-slate-600 hover:text-orange-500'
         )}
       >
         <ChevronUp className={isSmall ? 'w-4 h-4' : 'w-5 h-5'} />
@@ -72,12 +71,12 @@ export function VoteButton({
 
       <span
         className={cn(
-          'font-bold tabular-nums min-w-[2ch] text-center',
+          'font-mono font-bold tabular-nums min-w-[2ch] text-center',
           localScore > 0
-            ? 'text-orange-600 dark:text-orange-400'
+            ? 'text-orange-500 dark:text-orange-400'
             : localScore < 0
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-zinc-500 dark:text-zinc-400'
+              ? 'text-slate-400 dark:text-slate-500'
+              : 'text-slate-400 dark:text-slate-500'
         )}
       >
         {localScore}
@@ -88,11 +87,11 @@ export function VoteButton({
         disabled={!isAuthenticated || vote.isPending}
         title={isAuthenticated ? 'Downvote' : 'Log in to vote'}
         className={cn(
-          'p-0.5 rounded transition-colors',
-          isAuthenticated ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'cursor-not-allowed opacity-60',
+          'p-0.5 rounded transition-colors active:scale-90',
+          isAuthenticated ? 'hover:bg-rose-50 dark:hover:bg-rose-900/20' : 'cursor-not-allowed opacity-50',
           localVote === -1
-            ? 'text-blue-500'
-            : 'text-zinc-400 dark:text-zinc-600 hover:text-blue-500'
+            ? 'text-rose-500'
+            : 'text-slate-300 dark:text-slate-600 hover:text-rose-500'
         )}
       >
         <ChevronDown className={isSmall ? 'w-4 h-4' : 'w-5 h-5'} />

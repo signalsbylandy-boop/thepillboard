@@ -38,7 +38,7 @@ function ActivityItem({
       text = `${data['username'] as string} submitted "${data['title'] as string}"`
       break
     case 'new_comment':
-      icon = <MessageSquare className="w-3 h-3 text-green-500" />
+      icon = <MessageSquare className="w-3 h-3 text-orange-500" />
       text = `New comment on a post`
       break
     case 'big_vote':

@@ -94,7 +94,7 @@ function ModerationQueue({ token }: { token: string }) {
             <button
               onClick={() => action.mutate({ postId: item.postId, act: 'approve' })}
               disabled={action.isPending}
-              className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 transition-colors"
             >
               <CheckCircle className="w-3.5 h-3.5" />
               Approve

@@ -84,7 +84,7 @@
 
   /* ── Live indicator ───────────────────────────────────────────────────── */
   .live-dot {
-    @apply inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse;
+    @apply inline-block w-2 h-2 rounded-full bg-orange-500 animate-pulse;
   }
 
   /* ── Section headers ──────────────────────────────────────────────────── */

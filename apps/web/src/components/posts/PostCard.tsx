@@ -87,8 +87,8 @@ export function PostCard({ post, index }: PostCardProps) {
             {post.commentCount === 1 ? 'comment' : 'comments'}
           </Link>
           {viewerCount > 0 && (
-            <span className="flex items-center gap-1 text-green-500">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="flex items-center gap-1 text-orange-500">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
               {viewerCount} viewing
             </span>
           )}
