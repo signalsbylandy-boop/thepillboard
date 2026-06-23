@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 
-const CATEGORIES = [
+const BASE_CATEGORIES = [
   { label: 'He Said', slug: 'he-said' },
   { label: 'She Said', slug: 'she-said' },
   { label: 'Dating', slug: 'dating' },
@@ -22,6 +22,13 @@ export function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     document.documentElement.classList.contains('dark') ? 'dark' : 'light'
   )
+  // Randomly swap He Said / She Said order on each page load
+  const [categories] = useState(() => {
+    const [heSaid, sheSaid, ...rest] = BASE_CATEGORIES
+    return Math.random() < 0.5
+      ? [heSaid, sheSaid, ...rest]
+      : [sheSaid, heSaid, ...rest]
+  })
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -63,7 +70,7 @@ export function Header() {
 
         {/* Category tabs */}
         <nav className="hidden md:flex items-stretch h-12 divide-x divide-slate-700 border-r border-slate-700">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.slug}
               to={`/?tag=${cat.slug}`}
