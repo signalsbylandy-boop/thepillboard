@@ -3,8 +3,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { postsApi, commentsApi, ApiError } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import { VoteButton } from '@/components/posts/VoteButton'
-import { RoomViewerBadge } from '@/components/realtime/LivePresence'
-import { useRoomPresence } from '@/hooks/usePresence'
 import { formatDistanceToNow, formatNumber } from '@/lib/utils'
 import { ExternalLink, MessageSquare, ArrowLeft, Loader2, Send, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
@@ -16,13 +14,12 @@ export function PostPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const { data: post, isLoading } = useQuery({
+  const { data: post, isLoading, isError } = useQuery({
     queryKey: ['post', slug],
     queryFn: () => postsApi.get(slug!, token ?? undefined),
     enabled: !!slug,
+    retry: 1,
   })
-
-  useRoomPresence(post?.id)
 
   const { data: comments } = useQuery({
     queryKey: ['comments', post?.id],
@@ -38,11 +35,13 @@ export function PostPage() {
     )
   }
 
-  if (!post) {
+  if (isError || !post) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <p className="text-slate-500 mb-4">Post not found.</p>
-        <Link to="/" className="btn-outline text-sm">Go home</Link>
+        <p className="text-4xl mb-4">💬</p>
+        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">Post not found</p>
+        <p className="text-sm text-slate-400 mb-6">It may have been removed or the link may be wrong.</p>
+        <Link to="/" className="btn-outline text-sm">← Back to feed</Link>
       </div>
     )
   }
@@ -102,7 +101,6 @@ export function PostPage() {
               )}
               {topCategory && <span className="text-slate-200 dark:text-slate-700">·</span>}
               <span className="text-xs text-slate-400">{formatDistanceToNow(post.createdAt)}</span>
-              <RoomViewerBadge postId={post.id} />
             </div>
 
             {/* Title */}

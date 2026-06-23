@@ -40,9 +40,12 @@ export function GlobalPresenceBadge() {
   )
 }
 
+const EMPTY_USERS: Array<{ id: string; username: string }> = []
+
 export function RoomViewerBadge({ postId }: { postId: string }) {
   const count = usePresenceStore((s) => s.getRoomCount(postId))
-  const users = usePresenceStore((s) => s.roomUsers.get(postId) ?? [])
+  // Stable fallback: reuse module-level constant so selector never returns a new [] reference
+  const users = usePresenceStore((s) => s.roomUsers.get(postId) ?? EMPTY_USERS)
 
   if (count === 0) return null
 
