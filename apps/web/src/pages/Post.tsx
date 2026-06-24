@@ -4,15 +4,17 @@ import { postsApi, commentsApi, ApiError } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import { VoteButton } from '@/components/posts/VoteButton'
 import { formatDistanceToNow, formatNumber } from '@/lib/utils'
-import { ExternalLink, MessageSquare, ArrowLeft, Loader2, Send, ChevronUp } from 'lucide-react'
+import { ExternalLink, MessageSquare, ArrowLeft, Loader2, Send, ChevronUp, Share2, Link2, Check } from 'lucide-react'
 import { useState } from 'react'
-import type { Comment } from '@pillboard/types'
+import type { Comment, Post } from '@pillboard/types'
+import { useSeoMeta } from '@/lib/seo'
 
 export function PostPage() {
   const { slug } = useParams<{ slug: string }>()
   const { token, isAuthenticated } = useAuthStore()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [copied, setCopied] = useState(false)
 
   const { data: post, isLoading, isError } = useQuery({
     queryKey: ['post', slug],
@@ -25,6 +27,36 @@ export function PostPage() {
     queryKey: ['comments', post?.id],
     queryFn: () => commentsApi.list(post!.id, token ?? undefined),
     enabled: !!post?.id,
+  })
+
+  const seoDesc = (post?.text ?? post?.ogDescription)?.slice(0, 155)
+  const seoJsonLd = post
+    ? JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'DiscussionForumPosting',
+        headline: post.title,
+        description: seoDesc ?? '',
+        url: `https://thepillboard.com/p/${post.slug}`,
+        datePublished: post.createdAt,
+        ...(post.ogImageUrl ? { image: post.ogImageUrl } : {}),
+        author: { '@type': 'Person', name: post.author.username },
+        keywords: post.tags.map((t) => t.name).join(', '),
+        interactionStatistic: [
+          {
+            '@type': 'InteractionCounter',
+            interactionType: 'https://schema.org/CommentAction',
+            userInteractionCount: post.commentCount,
+          },
+        ],
+      })
+    : undefined
+  useSeoMeta({
+    title: post?.title ?? 'ThePillboard',
+    description: seoDesc ?? undefined,
+    ogImage: post?.ogImageUrl ?? undefined,
+    ogType: 'article',
+    canonicalPath: post ? `/p/${post.slug}` : undefined,
+    jsonLd: seoJsonLd,
   })
 
   if (isLoading) {
@@ -47,6 +79,16 @@ export function PostPage() {
   }
 
   const topCategory = post.tags[0]?.name
+  const topTag = post.tags[0]
+
+  const postUrl = `https://thepillboard.com/p/${post.slug}`
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(postUrl)}&via=thepillboard`
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(postUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -134,7 +176,7 @@ export function PostPage() {
             )}
 
             {/* Engagement bar */}
-            <div className="flex items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
               <div className="flex items-center gap-2">
                 <VoteButton
                   targetId={post.id}
@@ -149,15 +191,33 @@ export function PostPage() {
                 <MessageSquare className="w-4 h-4" />
                 <span className="text-sm font-medium">{formatNumber(post.commentCount)} comments</span>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="flex items-center gap-1 ml-auto">
+                <a
+                  href={twitterShareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                  aria-label="Share on X / Twitter"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Share</span>
+                </a>
+                <button
+                  onClick={handleCopyLink}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                  aria-label="Copy link"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-orange-500" /> : <Link2 className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy link'}</span>
+                </button>
                 <Link
                   to={`/u/${post.author.username}`}
-                  className="flex items-center gap-2 text-sm text-slate-500 hover:text-orange-600 transition-colors"
+                  className="flex items-center gap-2 pl-2 text-sm text-slate-500 hover:text-orange-600 transition-colors border-l border-slate-100 dark:border-slate-700 ml-1"
                 >
                   <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
                     {post.author.username[0]?.toUpperCase()}
                   </div>
-                  {post.author.username}
+                  <span className="hidden sm:inline">{post.author.username}</span>
                 </Link>
               </div>
             </div>
@@ -177,6 +237,16 @@ export function PostPage() {
               </Link>
             ))}
           </div>
+        )}
+
+        {/* More in category */}
+        {topTag && (
+          <MoreInCategory
+            categorySlug={topTag.slug}
+            categoryName={topTag.name}
+            currentPostId={post.id}
+            token={token ?? undefined}
+          />
         )}
 
         {/* Comments section */}
@@ -225,6 +295,70 @@ export function PostPage() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function MoreInCategory({
+  categorySlug,
+  categoryName,
+  currentPostId,
+  token,
+}: {
+  categorySlug: string
+  categoryName: string
+  currentPostId: string
+  token?: string
+}) {
+  const { data } = useQuery({
+    queryKey: ['posts', 'hot', categorySlug, 1, token],
+    queryFn: () => postsApi.list({ sort: 'hot', tag: categorySlug, page: 1, pageSize: 8 }, token),
+    staleTime: 60_000,
+  })
+
+  const related = data?.items.filter((p) => p.id !== currentPostId).slice(0, 4) ?? []
+
+  if (related.length === 0) return null
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-6">
+      <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+        <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          More in {categoryName}
+        </h2>
+        <Link
+          to={`/?tag=${categorySlug}`}
+          className="text-xs text-orange-500 hover:text-orange-600 font-semibold transition-colors"
+        >
+          View all →
+        </Link>
+      </div>
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        {related.map((p) => (
+          <Link
+            key={p.id}
+            to={`/p/${p.slug}`}
+            className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group"
+          >
+            {p.ogImageUrl && (
+              <img
+                src={p.ogImageUrl}
+                alt=""
+                className="w-16 h-12 object-cover rounded-lg shrink-0"
+                loading="lazy"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
+                {p.title}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 font-mono">
+                {p.score} pts · {formatNumber(p.commentCount)} comments
+              </p>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   )

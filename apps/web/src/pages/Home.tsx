@@ -7,6 +7,7 @@ import type { SortOrder, Post } from '@pillboard/types'
 import { Flame, Clock, TrendingUp, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from '@/lib/utils'
+import { useSeoMeta } from '@/lib/seo'
 
 const SORT_OPTIONS: { value: SortOrder; label: string; icon: React.ReactNode }[] = [
   { value: 'hot', label: 'Hot', icon: <Flame className="w-3.5 h-3.5" /> },
@@ -264,6 +265,14 @@ export function HomePage() {
   const sectionLabel = tag
     ? tag.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : 'Top Stories'
+
+  useSeoMeta({
+    title: tag ? `${sectionLabel} | ThePillboard` : 'ThePillboard — He Said · She Said',
+    description: tag
+      ? `Read the best ${sectionLabel} perspectives. He Said, She Said — you decide.`
+      : 'The He Said / She Said debate platform. Both sides of every gender conversation get equal airtime. Vote, comment, and share.',
+    canonicalPath: tag ? `/?tag=${tag}` : '/',
+  })
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

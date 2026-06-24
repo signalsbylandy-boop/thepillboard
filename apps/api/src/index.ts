@@ -2,6 +2,9 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
+import { eq, desc } from 'drizzle-orm'
+import { posts } from '@pillboard/db'
+import { getDb } from './lib/db'
 import type { Env, Variables } from './types'
 
 // Routes
@@ -70,6 +73,49 @@ app.get('/', (c) =>
 )
 
 app.get('/health', (c) => c.json({ status: 'ok' }))
+
+// ─── Sitemap ──────────────────────────────────────────────────────────────────
+
+app.get('/sitemap.xml', async (c) => {
+  const db = getDb(c.env)
+  const items = await db
+    .select({ slug: posts.slug, updatedAt: posts.updatedAt })
+    .from(posts)
+    .where(eq(posts.status, 'approved'))
+    .orderBy(desc(posts.updatedAt))
+    .limit(1000)
+
+  const baseUrl = 'https://thepillboard.com'
+  const staticUrls = [
+    { loc: '/', priority: '1.0', changefreq: 'hourly' },
+    { loc: '/?tag=he-said', priority: '0.9', changefreq: 'daily' },
+    { loc: '/?tag=she-said', priority: '0.9', changefreq: 'daily' },
+    { loc: '/?tag=dating', priority: '0.8', changefreq: 'daily' },
+    { loc: '/?tag=relationships', priority: '0.8', changefreq: 'daily' },
+    { loc: '/?tag=culture', priority: '0.7', changefreq: 'daily' },
+  ]
+
+  const urlEntries = [
+    ...staticUrls.map(
+      (p) =>
+        `  <url>\n    <loc>${baseUrl}${p.loc}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`,
+    ),
+    ...items.map((p) => {
+      const lastmod = p.updatedAt ? new Date(p.updatedAt).toISOString().split('T')[0] : ''
+      return `  <url>\n    <loc>${baseUrl}/p/${p.slug}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ''}\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`
+    }),
+  ]
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries.join('\n')}\n</urlset>`
+
+  return new Response(xml, {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      'Access-Control-Allow-Origin': '*',
+    },
+  })
+})
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 

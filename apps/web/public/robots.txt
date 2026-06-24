@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /moderation
+Disallow: /submit
+
+Sitemap: https://thepillboard.com/sitemap.xml

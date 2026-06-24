@@ -30,6 +30,7 @@ const LoginPage = lazy(() => import('@/pages/Login').then((m) => ({ default: m.L
 const RegisterPage = lazy(() => import('@/pages/Register').then((m) => ({ default: m.RegisterPage })))
 const SubmitPage = lazy(() => import('@/pages/Submit').then((m) => ({ default: m.SubmitPage })))
 const ModerationPage = lazy(() => import('@/pages/Moderation').then((m) => ({ default: m.ModerationPage })))
+const ProfilePage = lazy(() => import('@/pages/Profile'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +63,7 @@ function AppInner() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/moderation" element={<ModerationPage />} />
+          <Route path="/u/:username" element={<ProfilePage />} />
           <Route
             path="*"
             element={
