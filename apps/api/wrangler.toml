@@ -120,10 +120,11 @@ binding = "CACHE"
 id = "00e2b81a97b74be780c9c5e8ea86a0ef"
 preview_id = "00e2b81a97b74be780c9c5e8ea86a0ef"
 
-[[env.production.r2_buckets]]
-binding = "MEDIA"
-bucket_name = "pillboard-media"
-preview_bucket_name = "pillboard-media-preview"
+# R2 disabled until bucket is enabled in Cloudflare dashboard
+# [[env.production.r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "pillboard-media"
+# preview_bucket_name = "pillboard-media-preview"
 
 [[env.production.durable_objects.bindings]]
 name = "GLOBAL_PRESENCE"
